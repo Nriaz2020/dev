@@ -1,0 +1,72 @@
+{
+    "Version": "2023-11-03",
+    "Statement": [
+        {
+            "Sid": "Stmt1ITAdminFullAccess",
+            "Effect": "Allow",
+            "Principal": {
+                "Type": ["Group"],
+                "Identifiers": ["IT-Admins"]
+            },
+            "Action": [
+                "*:*"
+            ],
+            "Resource": [
+                "*"
+            ],
+            "Condition": {
+                "Bool": {"aws:MultiFactorAuthPresent": "true"}
+            }
+        },
+        {
+            "Sid": "Stmt2DevLimitedAccess",
+            "Effect": "Allow",
+            "Principal": {
+                "Type": ["Group"],
+                "Identifiers": ["Developers"]
+            },
+            "Action": [
+                "ec2:Describe*",
+                "s3:ListBucket",
+                "s3:GetObject",
+                "rds:Describe*",
+                "lambda:InvokeFunction"
+                // Specific actions relevant to developers
+            ],
+            "Resource": [
+                "arn:aws:ec2:::instance/*",
+                "arn:aws:s3:::dev-bucket/*",
+                "arn:aws:rds:::instance/*",
+                "arn:aws:lambda:::function/dev-*"
+                // Specific resources that developers need access to
+            ],
+            "Condition": {
+                "IpAddress": {"aws:SourceIp": "10.100.0.0/16"},
+                "Bool": {"aws:MultiFactorAuthPresent": "true"}
+            }
+        },
+        {
+            "Sid": "Stmt3AuditReadAccess",
+            "Effect": "Allow",
+            "Principal": {
+                "Type": ["Group"],
+                "Identifiers": ["Auditors"]
+            },
+            "Action": [
+                "logs:Describe*",
+                "logs:Get*",
+                "s3:GetObject"
+                // Actions that auditors can perform to read logs and access reports
+            ],
+            "Resource": [
+                "arn:aws:logs:::*",
+                "arn:aws:s3:::audit-logs/*"
+                // Resources containing logs and audit-related data
+            ],
+            "Condition": {
+                "Bool": {"aws:MultiFactorAuthPresent": "true"}
+            }
+        }
+        // Additional statements for other roles
+    ]
+}
